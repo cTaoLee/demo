@@ -1,0 +1,44 @@
+version: "3.3"
+services:
+  rabbitmq:
+    container_name: brush_order-rabbitmq
+    image: rabbitmq:3-management
+    volumes:
+      - ./data/rabbitmq/data:/var/lib/rabbitmq
+    networks:
+      - default
+      - outside
+    ports:
+      - 8080:15672
+
+  mysql:
+    container_name: brush_order-mysql
+    image: mysql
+    volumes:
+      - ./data/mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - default
+      - outside
+    ports:
+      - 3306:3306
+    command: ['--default-authentication-plugin=mysql_native_password']
+
+  python:
+    container_name: brush_order-python
+    depends_on:
+      - mysql
+      - rabbitmq
+    build: ""
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - 80:80
+    command: ['python', 'service.py']
+
+
+networks:
+  outside:
+    external: true
